@@ -1,0 +1,17 @@
+.App {
+  text-align: center;
+}
+h1{
+  font-size: 30;
+}
+button{
+  margin: 10px;
+  height: 150px;
+  width: 250px;
+  font-size: 24px;
+}
+.countShow{
+  font-size: 40px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+}
