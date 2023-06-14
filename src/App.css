@@ -2,40 +2,92 @@
   text-align: center;
 }
 h1{
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  color: rgb(0, 0, 173);
   font-size: 30;
 }
-.container{
+body{
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items:  center;
+  background-color: rgb(255, 199, 255);
 }
 button{
-  margin: 10px;
-  height: 100px;
-  width: 250px;
-  font-size: 50px;
+  margin: 5px;
+  font-size: 16px;
   border-radius: 10px;
 }
 button:hover{
   cursor: pointer;
 }
-.handShow{
-  font-size: 80px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: bold;
+.showDone{
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  color: rgb(0, 0, 173);
+  font-size: 16;
 }
-.referee{
-  font-size: 32px;
+.todoListContainer{
+  display: flex;
+  flex-direction: column;
+}
+.listContainer{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  overflow-y: auto
+}
+.listItem{
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
+  color: rgb(0, 1, 32);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: 50px;
   margin: 10px;
-  height: 100px;
-  width: 350px;
+  padding: 10px;
+  background-color: rgba(0,0,155,0.3);
+  font-size: 16px;
+  font-weight: bold;
 }
-.hand{
-  width:100px;
-  height:100px;
-}
-.chooseShow{
-  font-size: 100px;
+.addItem{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: 50px;
+  margin: 10px;
+  padding: 10px;
+  background-color: rgba(80, 0, 155, 0.3);
+  font-size: 16px;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
+}
+.listItemButtons{
+  display: flex;
+  flex-direction: column;
+  width:100px;
+}
+.listItemInput{
+  font-size: 16px;
+  height: 50px;
+  width: 300px;
+  border: 0;
+  padding: 5px;
+}
+.blur{
+  background-color: rgba(255,255,255,0.5);
+}
+.done{
+  text-decoration: line-through;
+}
+.centerChild{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.addTodoContainer{
+  max-width: 600px;
 }

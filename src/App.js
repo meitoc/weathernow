@@ -1,85 +1,135 @@
 import './App.css';
 import { useState } from "react";
+const listFromServer=[
+  {id: 1, note:"Ăn phở bò", done: true},
+  {id: 2, note: "Ăn cơm gà quán bà Năm", done: false},
+  {id: 3, note: "Ăn cơm mẹ nấu", done: false},
+  {id: 4, note: "Ăn hết cả thế giới", done: false},
+];
+
 function App() {
+  
   return (
     <div className="App">
-        <h1>
-          OẢNH TÙ TÌ
-        </h1>
-          <Count/>
+          <Render/>
     </div>
   );
 }
 
-function Count(){
-  const [game,gameState] = useState(0); //0: play, 1: result, 2: stop
-  const [hand,handState] = useState(0); //0: not, 1-3: rock, paper, scissors
-  const [hand2nd, hand2ndState] = useState(0);
-  const [referee, refereeState] = useState('Hãy chọn "búa", "báo" hoặc "kéo"');
 
-  const buttonColor = [{backgroundColor:"green"},{backgroundColor:"green"},{backgroundColor:"green"}];
-  if (hand>0) buttonColor[hand-1].backgroundColor = "red";
-  let handIcon = game ? choseHandIcon(hand) : "";
-  let hand2ndIcon = game ? choseHandIcon(hand2nd) : "";
-  let buttonRestart;
-  buttonRestart = game===0 ? <button onClick = {startGame}>RA TAY</button> : <button onClick = {resetGame}>CHƠI LẠI</button>;
-  if(game === 1) {
-    gameState(2);
-    setTimeout(() => {
-      const compare = hand-hand2nd;
-      const compareShow = compare>0 ? ( compare%2 ? "Bạn thắng" : "Bạn thua") : compare<0 ? ( compare%2 ? "Bạn thua" : "Bạn thắng") : "Hòa nhau rồi!";
-      refereeState(compareShow);
-    }, 600);
+function Render(){
+  const [localList,localListState] = useState(listFromServer.map((e)=>{return {...e, changing: false, newNote: e.note}}));
+  const [renderFlag,renderFlagState] = useState(true);//use this userState because React can't detect when element inside localList change
+  const [renderDoneOnly,renderDoneOnlyState] = useState(true);
+  return(
+  <div className="todoListContainer">
+    <h1>Todo List</h1>
+    <ShowDone/>
+    <RenderList list={localList} doneOnly={renderDoneOnly}/>
+    <AddTodo list={localList}/>
+  </div>
+  );
+
+  //=========== Function for Child components
+
+  function ShowDone(){
+    return (<div className="showDone"><input type="checkbox" defaultChecked={renderDoneOnly} onChange={()=>renderDoneOnlyState(!renderDoneOnly)}/>Don't show done tags</div>);
   }
 
-  function rockPaperScissors(input){
-  handState(input);
+  function AddTodo({list, valueInput}){
+    let newItem = null;
+    let maxId = list.reduce((max, e) => e.id > max ? e.id : max, 0);
+    let newId=maxId+1;
+    function addItem(){
+      if(newItem!==null) list.push(newItem);;
+      localListState(list);
+      renderFlagState(!renderFlag);
+
+    }
+    function changeAddItem(event,idInput){
+      let value = event.target.value
+      newItem={id: newId, note: value, done: false, changing: false, newNote: value}
+
+    }
+    return (
+      <div className="addTodoContainer">
+        <div className="addItem">
+          <input id={`addItem-${newId}`} className="listItemInput blur" defaultValue={valueInput} onChange={(event)=>changeAddItem(event,newId)}/>                 
+          <div className="listItemButtons">
+            <button onClick={addItem}>Add</button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  function resetGame(){
-    handState(0);
-    gameState(0);
-    refereeState('Hãy chọn "búa", "bao" hoặc "kéo"');
+  function RenderList({list, doneOnly}){
+    return (
+      <div key="listContainerId" className="listContainer">
+      {list.length?
+        (list.map(
+            (e)=>{
+              if(!(doneOnly && e.done)) return (
+                <div key={e.id} id={`listItem-${e.id}`} className="listItem">
+                {(<input type="checkbox" id={`doneItem-${e.id}`} defaultChecked={e.done} onChange={()=>reverseDone(e.id)}/>)}
+                {e.changing?
+                  (<input id={`changingItem-${e.id}`} className="listItemInput blur" defaultValue={e.newNote} onChange={(event)=>changeItem(event,e.id)}/>)
+                  :
+                  (<div className={`listItemInput centerChild${e.done? " done":""}`}>{e.note}</div>)
+                }
+                <div className="listItemButtons">
+                  {e.changing?(<button onClick={()=>saveItem(e.id)}>Save</button>):(<button onClick={()=>editItem(e.id)}>Edit</button>)}
+                  <button onClick={()=>deleteItem(e.id)}>Delete</button>
+                </div>
+              </div>
+              )
+              else return "";
+            }
+          )
+        )
+      :<h2>Empty Todo List</h2>}
+    </div>
+    );
   }
-  
-  function startGame(){
-    if(hand!==0) {
-      refereeState("Oảnh tù tì");
-      setTimeout(() => {
-        refereeState("Ra cái gì");
-      }, 600);
-      setTimeout(() => {
-        refereeState("Ra cái này");
-        let hand2 = Math.floor(Math.random() * 3) + 1;
-        hand2ndState(hand2);
-        gameState(1);
-      }, 1200);
+
+  //========Function for click button
+
+  function reverseDone(idInput){
+    let index = localList.findIndex(e => e.id === idInput);
+    if (index !== -1) {
+      localList[index].done = !localList[index].done;
+      localListState(localList);
+      renderFlagState(!renderFlag);
     }
   }
-  
-  function ChoseButton(props){
-    if(props.click) return (<button style = {buttonColor[props.index-1]} onClick = {()=>rockPaperScissors(props.index)}>{choseHandIcon(props.index)}</button>);
-    else return (<button style = {buttonColor[props.index-1]}>{choseHandIcon(props.index)}</button>);
+  function changeItem(event,idInput){
+    let index = localList.findIndex(e => e.id === idInput);
+    if (index !== -1) {
+      localList[index].newNote = event.target.value;
+      localListState(localList);
+      // renderFlagState(!renderFlag);
+    }
   }
-  
-  return (
-    <div className="container">
-      <div clsss="chooseShow">
-        <ChoseButton index={1} click={game===0} />
-        <ChoseButton index={2} click={game===0} />
-        <ChoseButton index={3} click={game===0} />
-      </div>
-      <div>
-        {buttonRestart}
-      </div>
-      <div className="hand"><div className="handShow">{handIcon}</div></div>
-      <div className="referee">Trọng tài:<br></br>{referee}</div>
-      <div className="hand"><div className="handShow">{hand2ndIcon}</div></div>
-    </div>
-  );
-}
-
-function choseHandIcon(input){
-  return input===1 ? "👊" : input===2 ?  "✋" : input===3 ? "✌" : "";
+  function editItem(idInput){
+    let index = localList.findIndex(e => e.id === idInput);
+    if (index !== -1) {
+      localList[index].changing = true;
+      localListState(localList);
+      renderFlagState(!renderFlag);
+    }
+  }
+  function deleteItem(idInput){
+    let newLocalList=localList.filter(e=>e.id!==idInput);
+    localListState(newLocalList);
+  }
+  function saveItem(idInput){
+    let index = localList.findIndex(e => e.id === idInput);
+    if (index !== -1) {
+      localList[index].note = localList[index].newNote;
+      localList[index].changing = false;
+      localListState(localList);
+      renderFlagState(!renderFlag);
+    }
+  }
 }
 export default App;
