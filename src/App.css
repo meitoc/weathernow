@@ -2,45 +2,65 @@
   text-align: center;
 }
 h1{
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  color: rgb(0, 0, 173);
-  font-size: 30;
+  font-family: Verdana, sans-serif;
+  color: rgba(0, 0, 173,0.5);
+  font-size: 32px;
+  white-space: pre-wrap;
+}
+h2{
+  font-family: Verdana, sans-serif;
+  color: rgba(0, 0, 173,0.5);
+  font-size: 16px;
+  white-space: pre-wrap;
+}
+.tempShow{
+  font-family:sans-serif;
+  color: rgba(0, 0, 173,0.9);
+  font-size: 64px;
 }
 body{
   display: flex;
   flex-direction: column;
   align-items:  center;
-  background-color: rgb(255, 199, 255);
 }
 button{
   margin: 5px;
   font-size: 16px;
   border-radius: 10px;
+  border: 0px;
 }
 button:hover{
   cursor: pointer;
 }
-.showDone{
+.smallInfo{
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   color: rgb(0, 0, 173);
   font-size: 16;
+  white-space: pre-wrap;
 }
-.todoListContainer{
+.weatherContainer{
+  max-width: 450px;
   display: flex;
   flex-direction: column;
+  padding: 10px;
+  border-radius: 20px;
+  background-color: rgba(255,255,255,0.5);
 }
-.listContainer{
+.infoDetailContainer{
   display: flex;
   flex-direction: column;
+  justify-content: space-around;
   align-items: center;
-  max-width: 600px;
-  overflow-y: auto
 }
-.listItem{
+.infoName{
   font-family:Verdana, Geneva, Tahoma, sans-serif;
+  color: rgb(0, 0, 173);
+  font-weight: bold;
+}
+.infoContainer{
   color: rgb(0, 1, 32);
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-around;
   align-items: center;
   flex-wrap: wrap;
@@ -48,8 +68,6 @@ button:hover{
   margin: 10px;
   padding: 10px;
   background-color: rgba(0,0,155,0.3);
-  font-size: 16px;
-  font-weight: bold;
 }
 .addItem{
   display: flex;
@@ -70,7 +88,7 @@ button:hover{
   flex-direction: column;
   width:100px;
 }
-.listItemInput{
+.searchInput{
   font-size: 16px;
   height: 50px;
   width: 300px;

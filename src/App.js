@@ -1,134 +1,121 @@
 import './App.css';
-import { useState } from "react";
-const listFromServer=[
-  {id: 1, note:"Ăn phở bò", done: true},
-  {id: 2, note: "Ăn cơm gà quán bà Năm", done: false},
-  {id: 3, note: "Ăn cơm mẹ nấu", done: false},
-  {id: 4, note: "Ăn hết cả thế giới", done: false},
-];
-
+import { useState,useEffect } from "react";
+const api={
+  base: "https://api.openweathermap.org/data/2.5/weather",
+  key: "731b9b9ff8dcb78778763e4c4396acbd"
+}
 function App() {
   
   return (
     <div className="App">
-          <Render/>
+          <Weather/>
     </div>
   );
 }
+function tempToRGBA(temp){
+  //0->15->30->40
+  //white->blue->yellow->red
+  temp = temp -273.15;
+  temp = (temp>40 ? 40 : temp<0? 0 : temp);
+  let bgRed,bgGreen,bgBlue;
+  bgRed= temp>=30? 255 : temp>=15? (temp-15)*255/15 : 255-temp*255/15;
+  bgGreen= temp>=30? 255-(temp-30)*255/10 : 255;
+  bgBlue= temp>=30? 0: temp>=15? 255-(temp-15)*255/15 : 255;
+  return `rgba(${bgRed},${bgGreen},${bgBlue},1)`
+}
 
-
-function Render(){
-  const [localList,localListState] = useState(listFromServer.map((e)=>{return {...e, changing: false, newNote: e.note}}));
-  const [renderFlag,renderFlagState] = useState(true);//use this userState because React can't detect when element inside localList change
-  const [renderDoneOnly,renderDoneOnlyState] = useState(true);
+function Weather(){
+  const [weatherInfo,weatherInfoState] = useState(null);
+  // const [cityInput,cityInputState] = useState('');
+  const [citySearch,citySearchState] = useState('');
+  const [renderCF,renderCFState] = useState(true);
+  useEffect(() => {
+    if (citySearch==="") return;
+    weatherInfoState("loading")
+    const fetchByCityName = async () => {
+      console.log("Run fetch");
+      try{
+        const response = await fetch(`${api.base}?q=${citySearch}&lang=vi&appid=${api.key}`);
+        const result = await response.json();
+        weatherInfoState(result);
+        // console.log(result);
+      }
+      catch(error){
+        return("error");
+      }
+    }
+    fetchByCityName();
+  }, [citySearch]);
+  // useEffect(() => {
+  //   document.body.style.background = weatherInfo===null? tempToRGBA(0):tempToRGBA(40);
+  // }, [weatherInfo]);
+  let cityInput;
+  //if(citySearch!=="") cityInput=citySearch;
   return(
-  <div className="todoListContainer">
-    <h1>Todo List</h1>
-    <ShowDone/>
-    <RenderList list={localList} doneOnly={renderDoneOnly}/>
-    <AddTodo list={localList}/>
+  <div className="weatherContainer">
+    <h1>Thời tiết hiện tại</h1>
+    <SearchCity/>
+    <CelsiusFahrenheit/>
+    <RenderWeather info={weatherInfo} corf={renderCF}/>
   </div>
   );
 
   //=========== Function for Child components
 
-  function ShowDone(){
-    return (<div className="showDone"><input type="checkbox" defaultChecked={renderDoneOnly} onChange={()=>renderDoneOnlyState(!renderDoneOnly)}/>Don't show done tags</div>);
+  function CelsiusFahrenheit(){
+    return (<div className="smallInfo">
+      <input type="checkbox" defaultChecked={renderCF} onChange={()=>renderCFState(!renderCF)}/>℃
+      <input type="checkbox" defaultChecked={!renderCF} onChange={()=>renderCFState(!renderCF)}/>℉
+      </div>);
   }
 
-  function AddTodo({list, valueInput}){
-    let newItem = null;
-    let maxId = list.reduce((max, e) => e.id > max ? e.id : max, 0);
-    let newId=maxId+1;
-    function addItem(){
-      if(newItem!==null) list.push(newItem);;
-      localListState(list);
-      renderFlagState(!renderFlag);
-
-    }
-    function changeAddItem(event,idInput){
-      let value = event.target.value
-      newItem={id: newId, note: value, done: false, changing: false, newNote: value}
-
+  function SearchCity({info}){
+    
+    function searchCityName(){
+      
+      citySearchState(cityInput);
     }
     return (
-      <div className="addTodoContainer">
+      <div className="SearchCityContainer">
         <div className="addItem">
-          <input id={`addItem-${newId}`} className="listItemInput blur" defaultValue={valueInput} onChange={(event)=>changeAddItem(event,newId)}/>                 
+          <input id="searchInput" className="searchInput blur" value={cityInput} onChange={(event)=>cityInput=(event.target.value)} placeholder='Tên thành phố'/>                 
           <div className="listItemButtons">
-            <button onClick={addItem}>Add</button>
+            <button onClick={searchCityName}>Tìm</button>
           </div>
         </div>
       </div>
     );
   }
 
-  function RenderList({list, doneOnly}){
-    return (
-      <div key="listContainerId" className="listContainer">
-      {list.length?
-        (list.map(
-            (e)=>{
-              if(!(doneOnly && e.done)) return (
-                <div key={e.id} id={`listItem-${e.id}`} className="listItem">
-                {(<input type="checkbox" id={`doneItem-${e.id}`} defaultChecked={e.done} onChange={()=>reverseDone(e.id)}/>)}
-                {e.changing?
-                  (<input id={`changingItem-${e.id}`} className="listItemInput blur" defaultValue={e.newNote} onChange={(event)=>changeItem(event,e.id)}/>)
-                  :
-                  (<div className={`listItemInput centerChild${e.done? " done":""}`}>{e.note}</div>)
-                }
-                <div className="listItemButtons">
-                  {e.changing?(<button onClick={()=>saveItem(e.id)}>Save</button>):(<button onClick={()=>editItem(e.id)}>Edit</button>)}
-                  <button onClick={()=>deleteItem(e.id)}>Delete</button>
-                </div>
-              </div>
-              )
-              else return "";
-            }
-          )
+  function RenderWeather({info, corf}){
+    if(info===null)
+      return (<div className="listContainer"><h2>Hãy nhập tên thành phố mà bạn muốn biết thời tiết hiện tại.</h2></div>)
+    else if(info==="loading")
+      return (<div className="listContainer"><h2>Đang lấy dữ liệu</h2></div>)
+    else if(info ==="error")
+      return (<div className="listContainer"><h2>Đã có lỗi xẩy ra, hãy kiểm tra kết nối internet của bạn!</h2></div>)
+    else {
+      let code = info.cod;
+      if(code===200){
+        let description = info.weather[0].description;
+        let humidity = weatherInfo.main.humidity;
+        let temperature=corf? info.main.temp-273.15 : 9*(info.main.temp-273.15)/5+32;
+        let tempColor = tempToRGBA(info.main.temp);
+        let cityName = weatherInfo.name;
+        document.body.style.background = info===null? tempToRGBA(0):tempColor;
+        return (
+          <div className="infoContainer">
+            <div className='infoName'>{cityName}</div>
+            <div className='infoDetailContainer'>
+              <div className='smallInfo'>{description}</div>
+              <div className="tempShow">{parseFloat(temperature.toFixed(1))}{corf?"°C":"°F"}</div>
+              <div className='smallInfo'>Độ ẩm: {humidity}%</div>
+            </div>
+          </div>
         )
-      :<h2>Empty Todo List</h2>}
-    </div>
-    );
-  }
-
-  //========Function for click button
-
-  function reverseDone(idInput){
-    let index = localList.findIndex(e => e.id === idInput);
-    if (index !== -1) {
-      localList[index].done = !localList[index].done;
-      localListState(localList);
-      renderFlagState(!renderFlag);
-    }
-  }
-  function changeItem(event,idInput){
-    let index = localList.findIndex(e => e.id === idInput);
-    if (index !== -1) {
-      localList[index].newNote = event.target.value;
-      localListState(localList);
-      // renderFlagState(!renderFlag);
-    }
-  }
-  function editItem(idInput){
-    let index = localList.findIndex(e => e.id === idInput);
-    if (index !== -1) {
-      localList[index].changing = true;
-      localListState(localList);
-      renderFlagState(!renderFlag);
-    }
-  }
-  function deleteItem(idInput){
-    let newLocalList=localList.filter(e=>e.id!==idInput);
-    localListState(newLocalList);
-  }
-  function saveItem(idInput){
-    let index = localList.findIndex(e => e.id === idInput);
-    if (index !== -1) {
-      localList[index].note = localList[index].newNote;
-      localList[index].changing = false;
-      localListState(localList);
-      renderFlagState(!renderFlag);
+      } else{
+        return(<div className="listContainer"><h2>Bạn đã nhập sai tên thành phố. Nhập lại nhé!</h2></div>);
+      }
     }
   }
 }
